@@ -142,15 +142,17 @@ CREATE TABLE IF NOT EXISTS support_tickets (
 CREATE INDEX IF NOT EXISTS idx_support_tickets_code ON support_tickets (ticket_code);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_reportado ON support_tickets (reportado_por);
 
--- FUNCIÓN RPC: Desbloqueo automático
+-- FUNCIÓN RPC: SINCRONIZACIÓN Y DESBLOQUEO AUTOMÁTICO (hora de Chile)
 CREATE OR REPLACE FUNCTION update_user_status_by_calendar_blocks()
 RETURNS jsonb AS $$
 DECLARE
-    v_today DATE := CURRENT_DATE;
+    v_today DATE := (CURRENT_TIMESTAMP AT TIME ZONE 'America/Santiago')::date;
     v_disabled_count INTEGER := 0;
     v_enabled_count INTEGER := 0;
     v_cleaned_dates INTEGER := 0;
 BEGIN
+    -- A. DESHABILITAR usuarios con bloqueo activo HOY (según zona horaria de Chile)
+    -- (v_today está entre fecha_inicio y fecha_termino inclusive)
     UPDATE user_profiles
     SET habilitado = false
     WHERE email IN (
@@ -160,25 +162,33 @@ BEGIN
         AND v_today BETWEEN fecha_inicio AND fecha_termino
     )
     AND (habilitado = true OR habilitado IS NULL);
+    
     GET DIAGNOSTICS v_disabled_count = ROW_COUNT;
 
+    -- B. HABILITAR usuarios cuyos bloqueos ya expiraron
+    -- (fecha_termino < v_today, ej: bloqueo hasta el 12, hoy es 13 o más)
+    -- y que NO tengan ningún otro bloqueo activo para hoy
     UPDATE user_profiles up
     SET habilitado = true
     WHERE up.habilitado = false
+    -- No tiene bloqueos activos hoy
     AND NOT EXISTS (
         SELECT 1
         FROM calendar_blocks cb
         WHERE cb.user_email = up.email
         AND v_today BETWEEN cb.fecha_inicio AND cb.fecha_termino
     )
+    -- Pero sí tiene o tuvo un bloqueo en calendar_blocks que ya concluyó
     AND EXISTS (
         SELECT 1
         FROM calendar_blocks cb
         WHERE cb.user_email = up.email
         AND cb.fecha_termino < v_today
     );
+
     GET DIAGNOSTICS v_enabled_count = ROW_COUNT;
 
+    -- C. Limpiar campos históricos vales_disabled_from / vales_disabled_to en user_profiles si ya expiraron
     UPDATE user_profiles
     SET vales_disabled_from = NULL,
         vales_disabled_to = NULL,
@@ -191,15 +201,90 @@ BEGIN
         WHERE cb.user_email = user_profiles.email
         AND v_today BETWEEN cb.fecha_inicio AND cb.fecha_termino
     );
+
     GET DIAGNOSTICS v_cleaned_dates = ROW_COUNT;
 
     RETURN jsonb_build_object(
         'deshabilitados_hoy', v_disabled_count,
         'habilitados_automaticamente', v_enabled_count,
-        'fechas_limpiadas', v_cleaned_dates
+        'fechas_limpiadas', v_cleaned_dates,
+        'fecha_chile', v_today,
+        'ejecutado_el', NOW()
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+COMMENT ON FUNCTION update_user_status_by_calendar_blocks IS 'Actualiza automáticamente el estado habilitado según calendar_blocks en hora de Chile. Desbloquea al día siguiente de la fecha de término.';
+
+-- TRIGGER INMEDIATO AL INSERTAR O ACTUALIZAR BLOQUEO
+CREATE OR REPLACE FUNCTION apply_calendar_block_on_change()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_today DATE := (CURRENT_TIMESTAMP AT TIME ZONE 'America/Santiago')::date;
+BEGIN
+    -- Si la fecha de hoy en Chile cae dentro del rango de fechas del bloqueo, deshabilitar inmediatamente
+    IF v_today BETWEEN NEW.fecha_inicio AND NEW.fecha_termino THEN
+        UPDATE user_profiles
+        SET habilitado = false
+        WHERE email = NEW.user_email;
+    -- Si el bloqueo ya expiró y no tiene otros activos, habilitar
+    ELSIF v_today > NEW.fecha_termino THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM calendar_blocks
+            WHERE user_email = NEW.user_email
+            AND v_today BETWEEN fecha_inicio AND fecha_termino
+            AND id != NEW.id
+        ) THEN
+            UPDATE user_profiles
+            SET habilitado = true
+            WHERE email = NEW.user_email;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_apply_calendar_block_insert ON calendar_blocks;
+CREATE TRIGGER trigger_apply_calendar_block_insert
+    AFTER INSERT ON calendar_blocks
+    FOR EACH ROW
+    EXECUTE FUNCTION apply_calendar_block_on_change();
+
+DROP TRIGGER IF EXISTS trigger_apply_calendar_block_update ON calendar_blocks;
+CREATE TRIGGER trigger_apply_calendar_block_update
+    AFTER UPDATE ON calendar_blocks
+    FOR EACH ROW
+    WHEN (OLD.fecha_inicio IS DISTINCT FROM NEW.fecha_inicio OR OLD.fecha_termino IS DISTINCT FROM NEW.fecha_termino)
+    EXECUTE FUNCTION apply_calendar_block_on_change();
+
+-- TRIGGER INMEDIATO AL ELIMINAR BLOQUEO
+CREATE OR REPLACE FUNCTION handle_calendar_block_on_delete()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_today DATE := (CURRENT_TIMESTAMP AT TIME ZONE 'America/Santiago')::date;
+BEGIN
+    -- Si no le quedan otros bloqueos activos hoy en Chile, habilitar al usuario
+    IF NOT EXISTS (
+        SELECT 1 FROM calendar_blocks
+        WHERE user_email = OLD.user_email
+        AND v_today BETWEEN fecha_inicio AND fecha_termino
+        AND id != OLD.id
+    ) THEN
+        UPDATE user_profiles
+        SET habilitado = true
+        WHERE email = OLD.user_email;
+    END IF;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_handle_calendar_block_delete ON calendar_blocks;
+CREATE TRIGGER trigger_handle_calendar_block_delete
+    AFTER DELETE ON calendar_blocks
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_calendar_block_on_delete();
 
 
 -- PARTE 2: POLÍTICAS RLS (Row Level Security)
@@ -426,3 +511,35 @@ INSERT INTO support_tickets (ticket_code, sistema_origen, titulo, descripcion, c
 ('TK-2026-1001', 'vales_admin', 'Dificultad en lectura de código en Casino Central', 'El escáner del punto de validación no reconoce el brillo de pantalla en teléfonos de turnos de tarde.', 'codigos_qr', 'alta', 'abierto', 'juan.perez@demo.com', 'Juan Pablo Pérez', NULL, NULL, NULL, NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
 ('TK-2026-1002', 'vales_admin', 'Solicitud de bloqueo por feriado compensatorio', 'Requerimos programar el bloqueo de vales para 4 colaboradores que tendrán descanso el próximo viernes.', 'vales_bloqueos', 'media', 'en_revision', 'lider.alpha@demo.com', 'Carlos Mendoza', NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW() - INTERVAL '12 hours'),
 ('TK-2026-1003', 'vales_admin', 'Validación de planilla de cierre mensual GDH', 'Confirmación de las columnas de contingencia y porcentajes asignados en la exportación Excel.', 'cierre_mensual', 'baja', 'resuelto', 'admin@demo.com', 'Administrador General', 'Se verificó la conciliación de fórmulas en ExcelJS; todas las validaciones cuadran al 100%.', 'admin@demo.com', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '3 days', NOW() - INTERVAL '6 hours');
+
+
+-- =========================================================================
+-- PARTE 4: TAREA PROGRAMADA DE DESBLOQUEO (pg_cron)
+-- Todos los días a las 00:01 hora de Chile (03:01 UTC).
+-- Si pg_cron no está disponible, la sincronización la hace la aplicación web.
+-- =========================================================================
+DO $$
+BEGIN
+    BEGIN
+        CREATE EXTENSION IF NOT EXISTS pg_cron;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'No se pudo habilitar pg_cron: %', SQLERRM;
+    END;
+
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+        IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'update-user-status-by-blocks') THEN
+            PERFORM cron.unschedule('update-user-status-by-blocks');
+        END IF;
+        PERFORM cron.schedule(
+            'update-user-status-by-blocks',
+            '1 3 * * *',
+            'SELECT update_user_status_by_calendar_blocks();'
+        );
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    RAISE NOTICE 'pg_cron no disponible o permisos insuficientes, la sincronización se realizará vía aplicación web.';
+END;
+$$;
+
+-- Sincronizar el estado de los usuarios con los bloqueos cargados
+SELECT update_user_status_by_calendar_blocks();

@@ -39,9 +39,9 @@ Para poder iniciar sesión en la web:
 3. Abre el archivo:
    [`database/00_full_setup_and_seed.sql`](./00_full_setup_and_seed.sql)
 4. Copia **todo su contenido**, pégalo en el editor SQL de Supabase y haz clic en el botón verde **"Run"** (o presiona `Ctrl + Enter`).
-5. Verás el mensaje `Success. No rows returned`. ¡Listo! Las 10 tablas, funciones, políticas de seguridad RLS y datos ficticios ya estarán cargados.
+5. Al terminar verás el resultado de la sincronización inicial de bloqueos. ¡Listo! Las 10 tablas, funciones, triggers de desbloqueo automático, políticas de seguridad RLS y datos ficticios ya estarán cargados.
 
-*(Si prefieres ejecutarlo por partes, tienes los archivos `01_schema.sql`, `02_rls_policies.sql` y `03_seed_demo_data.sql`).*
+> 💡 **Desbloqueo automático:** el script programa con `pg_cron` una tarea diaria a las 00:01 (hora de Chile) que desbloquea a los usuarios cuyo bloqueo terminó. Si tu proyecto no tiene `pg_cron` disponible, la aplicación web hace esta sincronización por su cuenta.
 
 ---
 
