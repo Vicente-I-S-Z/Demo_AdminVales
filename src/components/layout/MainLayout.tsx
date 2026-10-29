@@ -43,13 +43,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Logos Corporativos */}
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               <img
-                src="/logos/empresa-alpha.svg"
+                src="/logos/empresa-alpha.svg?v=2"
                 alt="Empresa Alpha - Servicios Industriales"
                 className="h-7 sm:h-9 md:h-11 object-contain transition-transform hover:scale-105"
               />
               <div className="h-6 sm:h-8 w-px bg-slate-200" />
               <img
-                src="/logos/empresa-beta.svg"
+                src="/logos/empresa-beta.svg?v=2"
                 alt="Empresa Beta - Tecnologías & Gestión"
                 className="h-7 sm:h-9 md:h-11 object-contain transition-transform hover:scale-105"
               />
