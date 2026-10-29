@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60" fill="none">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+  </defs>
+  <!-- Geometric Logo Icon -->
+  <rect x="6" y="10" width="40" height="40" rx="10" fill="url(#orangeGrad)" />
+  <path d="M21 20 H28 C32 20 34 22 34 25 C34 27 33 28 31 29 C34 30 35 32 35 35 C35 38 32 40 28 40 H21 V20 Z M26 24 V28 H28 C29.5 28 30.5 27.5 30.5 26 C30.5 24.5 29.5 24 28 24 H26 Z M26 32 V36 H28.5 C30 36 31 35 31 33.5 C31 32 30 31.5 28.5 31.5 H26 V32 Z" fill="#ffffff" />
+  <!-- Text Brand -->
+  <text x="56" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1e293b" letter-spacing="0.5">
+    EMPRESA BETA
+  </text>
+  <text x="56" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748b" letter-spacing="1">
+    TECNOLOGÍAS & GESTIÓN
+  </text>
+</svg>

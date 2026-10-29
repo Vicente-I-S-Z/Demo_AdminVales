@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #0033AB;
+  --color-brand-green: #207B47;
+  --color-brand-orange: #FFA53C;
+  --color-brand-brown-dark: #442A12;
+  --color-brand-brown: #7F4C12;
+  --color-brand-ochre: #BC7314;
+  --color-brand-peach: #FABE7F;
+  --color-brand-cream: #FDDAB8;
+  --color-brand-bg: #F8F9FA;
+  --color-primary: var(--color-brand-blue);
+  --color-secondary: var(--color-brand-green);
+  --color-accent: var(--color-brand-orange);
+  --color-background: var(--color-brand-bg);
+  --color-text: #1E293B;
+  --color-success: var(--color-brand-green);
+  --color-danger: #EF4444;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animate-shine {
+    animation: shine 4s linear infinite;
+  }
+}
+
+@keyframes shine {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text antialiased;
+  }
+}
+
+/* ─── Responsive: navegación inferior y botón Soporte TI ───────────────
+   Celular (< 640px): el botón flotante queda sobre el menú inferior (Dock).
+   Tablet (640px a 1023px): también sobre el Dock, porque este es más ancho
+   y al pasar el mouse sus íconos se agrandan.
+   Escritorio (>= 1024px): esquina inferior derecha, junto al Dock.
+   env(safe-area-inset-bottom) evita la barra de inicio de iPhone/Android. */
+.support-fab {
+  bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .support-fab {
+    bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1024px) {
+  .support-fab {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+.dock-safe-area {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .dock-safe-area {
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Evita el zoom automático de iOS al tocar un campo de texto (requiere 16px). */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
