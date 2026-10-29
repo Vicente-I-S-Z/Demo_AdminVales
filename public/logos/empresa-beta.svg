@@ -1,18 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60" fill="none">
   <defs>
-    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f97316" />
-      <stop offset="100%" stop-color="#ea580c" />
+    <linearGradient id="betaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c" />
+      <stop offset="100%" stop-color="#c2410c" />
     </linearGradient>
   </defs>
-  <!-- Geometric Logo Icon -->
-  <rect x="6" y="10" width="40" height="40" rx="10" fill="url(#orangeGrad)" />
-  <path d="M21 20 H28 C32 20 34 22 34 25 C34 27 33 28 31 29 C34 30 35 32 35 35 C35 38 32 40 28 40 H21 V20 Z M26 24 V28 H28 C29.5 28 30.5 27.5 30.5 26 C30.5 24.5 29.5 24 28 24 H26 Z M26 32 V36 H28.5 C30 36 31 35 31 33.5 C31 32 30 31.5 28.5 31.5 H26 V32 Z" fill="#ffffff" />
-  <!-- Text Brand -->
-  <text x="56" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1e293b" letter-spacing="0.5">
-    EMPRESA BETA
+  <!-- Icono: "B" con nodos de circuito -->
+  <rect x="6" y="9" width="42" height="42" rx="13" fill="url(#betaGrad)" />
+  <path d="M20 19 V41 M20 19 H27 A5.5 5.5 0 0 1 27 30 H20 M20 30 H28.5 A5.5 5.5 0 0 1 28.5 41 H20" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M34 24.5 H38.5 V17.5" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="38.5" cy="16" r="2.2" fill="#ffffff" />
+  <!-- Marca -->
+  <text x="58" y="31" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="800" letter-spacing="0.5">
+    <tspan fill="#1e293b">EMPRESA </tspan><tspan fill="#ea580c">BETA</tspan>
   </text>
-  <text x="56" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748b" letter-spacing="1">
-    TECNOLOGÍAS & GESTIÓN
-  </text>
+  <rect x="58" y="37" width="16" height="2" rx="1" fill="#f97316" />
+  <text x="78" y="40" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="8.5" font-weight="700" fill="#64748b" letter-spacing="1.2">TECNOLOGÍAS &amp; GESTIÓN</text>
 </svg>

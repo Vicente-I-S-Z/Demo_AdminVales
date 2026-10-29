@@ -1,18 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60" fill="none">
   <defs>
-    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563eb" />
-      <stop offset="100%" stop-color="#1d4ed8" />
+    <linearGradient id="alphaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1e3a8a" />
     </linearGradient>
   </defs>
-  <!-- Geometric Logo Icon -->
-  <rect x="6" y="10" width="40" height="40" rx="10" fill="url(#blueGrad)" />
-  <path d="M26 18 L36 38 H31 L29 34 H23 L21 38 H16 L26 18 Z M26 25 L24 30 H28 L26 25 Z" fill="#ffffff" />
-  <!-- Text Brand -->
-  <text x="56" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1e293b" letter-spacing="0.5">
-    EMPRESA ALPHA
+  <!-- Icono: hexágono industrial con "A" -->
+  <path d="M26 8 L45 19 V41 L26 52 L7 41 V19 Z" fill="url(#alphaGrad)" />
+  <path d="M26 13 L40.5 21.5 V38.5 L26 47 L11.5 38.5 V21.5 Z" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.2" />
+  <path d="M17.5 40 L26 19 L34.5 40" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M21.2 33 H30.8" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" />
+  <!-- Marca -->
+  <text x="56" y="31" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="800" letter-spacing="0.5">
+    <tspan fill="#1e293b">EMPRESA </tspan><tspan fill="#1d4ed8">ALPHA</tspan>
   </text>
-  <text x="56" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748b" letter-spacing="1">
-    SERVICIOS INDUSTRIALES
-  </text>
+  <rect x="56" y="37" width="16" height="2" rx="1" fill="#3b82f6" />
+  <text x="76" y="40" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="8.5" font-weight="700" fill="#64748b" letter-spacing="1.2">SERVICIOS INDUSTRIALES</text>
 </svg>
